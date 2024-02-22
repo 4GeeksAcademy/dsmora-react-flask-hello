@@ -2,36 +2,62 @@ const getState = ({ getStore, getActions, setStore }) => {
 	return {
 		store: {
 			message: null,
-			demo: [
-				{
-					title: "FIRST",
-					background: "white",
-					initial: "white"
-				},
-				{
-					title: "SECOND",
-					background: "white",
-					initial: "white"
-				}
-			]
+			token: null,
+			isLogged: false,
+			users: []
 		},
 		actions: {
 			// Use getActions to call a function within a fuction
 			exampleFunction: () => {
 				getActions().changeColor(0, "green");
 			},
-
 			getMessage: async () => {
-				try{
+				try {
 					// fetching data from the backend
-					const resp = await fetch(process.env.BACKEND_URL + "/api/hello")
+					const resp = await fetch(process.env.BACKEND_URL + "/api/hello",
+
+					)
 					const data = await resp.json()
 					setStore({ message: data.message })
 					// don't forget to return something, that is how the async resolves
 					return data;
-				}catch(error){
+				} catch (error) {
 					console.log("Error loading message from backend", error)
 				}
+			},
+			getUsers: async () => {
+				try {
+					// fetching data from the backend
+					const token = getStore().token
+					const resp = await fetch(process.env.BACKEND_URL + "/api/users",
+						{
+							headers: {
+								'Authorization': 'Bearer ' + token
+							}
+						})
+					const data = await resp.json();
+
+					setStore({ users: data })
+					// don't forget to return something, that is how the async resolves
+					return data;
+				} catch (error) {
+					console.log("Error loading message from backend", error)
+				}
+			},
+			createToken: async (body) => {
+
+				const resp = await fetch(process.env.BACKEND_URL + "/api/create-token", {
+					method: "POST",
+					body: JSON.stringify(body),
+					mode: "cors",
+					headers: {
+						'Content-Type': 'application/json',
+					}
+				});
+
+				const data = await resp.json();
+
+				setStore({ token: data.token })
 			},
 			changeColor: (index, color) => {
 				//get the store
